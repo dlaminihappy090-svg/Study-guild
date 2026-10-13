@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html><head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Study Guild Worldwide</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#00f2fe">
+<style>
+body{margin:0;background:#060610;color:#fff;font-family:system-ui;padding-bottom:60px}
+.top{background:linear-gradient(90deg,#0f0c29,#302b63,#24243e);padding:16px;text-align:center;border-bottom:3px solid #00f2fe}
+.top h1{margin:0;font-size:18px;letter-spacing:2px}
+.stat{display:flex;justify-content:space-around;background:#0f0f1f;padding:10px;font-size:11px}
+.stat b{color:#00f2fe}
+.tabs{display:flex;gap:6px;padding:10px;background:#0a0a1a;overflow-x:auto;position:sticky;top:0;z-index:10}
+.tabs button{background:#151530;border:1px solid #333;color:#fff;padding:7px 12px;border-radius:20px;font-size:11px;white-space:nowrap}
+.tabs button.active{background:#00f2fe;color:#000;font-weight:bold}
+.subject{background:#12122a;margin:10px;border-radius:14px;border:1px solid #2a2a4a;overflow:hidden}
+.sub-head{padding:12px;background:#15153a;display:flex;justify-content:space-between}
+.topic{display:flex;gap:10px;padding:10px 12px;border-top:1px solid #1a1a33;font-size:12px;align-items:center}
+.topic.unfinished{border-left:3px solid #ff4757;background:#1a1220}
+.topic.done{border-left:3px solid #2ed573;background:#12201a;opacity:0.6}
+.topic.done span{text-decoration:line-through;color:#777}
+.topic small{color:#aaa;font-size:10px;display:block}
+.progress{height:6px;background:#222;margin:0 12px 8px;border-radius:10px;overflow:hidden}
+.fill{height:100%;background:linear-gradient(90deg,#00f2fe,#4facfe)}
+</style></head><body>
+<div class="top"><h1>🌍 STUDY GUILD WORLDWIDE</h1><p>APK BUILD READY • OFFLINE • WORLD CURRICULUM</p></div>
+<div class="stat"><div>🔴 <b id="u">0</b> Unfinished</div><div>✅ <b id="d">0</b> Done</div><div>🌍 <b id="p">0%</b></div></div>
+<div class="tabs">
+<button class="active" onclick="fs('all',this)">ALL</button>
+<button onclick="fs('Physics',this)">⚡ PHYSICS</button>
+<button onclick="fs('Chemistry',this)">🧪 CHEM</button>
+<button onclick="fs('Biology',this)">🧬 BIO</button>
+<button onclick="fs('Maths',this)">📐 MATHS</button>
+<button onclick="fs('Computer Science',this)">💻 CS & AI</button>
+<button onclick="fs('World History',this)">🏛️ HIST</button>
+<button onclick="fs('Economics',this)">💰 ECON</button>
+<button onclick="fs('Psychology',this)">🧠 PSYCH</button>
+</div><div id="g"></div>
+<script>
+let data=[
+{s:"Physics",topics:[["Classical Mechanics","F=ma, motion"],["Thermodynamics","Heat, energy"],["Electromagnetism","Circuits, motors"],["Quantum","Qubits, atoms"],["Relativity","E=mc²"],["Astrophysics","Black holes"]]},
+{s:"Chemistry",topics:[["Periodic Table","118 elements"],["Bonding","Covalent, ionic"],["Reactions","Moles"],["Organic","Carbon"],["Biochem","DNA"],["Materials","Batteries"]]},
+{s:"Biology",topics:[["Cell Bio","Mitochondria"],["Genetics","CRISPR"],["Evolution","Darwin"],["Neuroscience","Brain"],["Ecology","Climate"],["Human Body","Immune"]]},
+{s:"Maths",topics:[["Algebra & Calculus","Derivatives"],["Geometry","Shapes"],["Statistics","AI math"],["Number Theory","Crypto"],["Logic","Thinking"],["Applied","Real world"]]},
+{s:"Computer Science",topics:[["Programming","Python, JS"],["Data Structures","Trees, graphs"],["Algorithms","AI"],["Networking","WiFi, TCP"],["Security","Hacking"],["AI","Neural nets"],["App Building","No-code"]]},
+{s:"World History",topics:[["Ancient","Egypt, Rome"],["Industrial Rev","Factories"],["World Wars","WW1 WW2"],["Cold War","USA USSR"],["Decolonization","Africa World"],["Future","Next"]]},
+{s:"Economics",topics:[["Supply Demand","Prices"],["Money","Banks"],["Inflation Crypto","Bitcoin"],["Business Models","Google"],["Hustle","Side hustles"]]},
+{s:"Psychology",topics:[["Memory","Remember"],["Motivation","Focus"],["Communication","Speak"],["Mental Models","CEOs"]]}
+];
+let saved=JSON.parse(localStorage.getItem('guildV4')||'{}');let g=document.getElementById('g');
+function render(filter='all'){
+ g.innerHTML='';let uf=0,dn=0,tot=0;
+ data.forEach(sub=>{
+  if(filter!='all'&&sub.s!=filter)return;
+  let doneC=0; sub.topics.forEach(t=>{if(saved[sub.s+'|'+t[0]])doneC++; tot++;});
+  uf+=sub.topics.length-doneC; dn+=doneC;
+  let perc=Math.round((doneC/sub.topics.length)*100);
+  let wrap=document.createElement('div'); wrap.className='subject';
+  wrap.innerHTML=`<div class="sub-head"><h3>${sub.s}</h3><span style="background:#ff4757;padding:2px 8px;border-radius:10px;font-size:10px">🔴 ${sub.topics.length-doneC} left</span></div><div class="progress"><div class="fill" style="width:${perc}%"></div></div>`;
+  sub.topics.forEach(t=>{
+   let is=saved[sub.s+'|'+t[0]];
+   let d=document.createElement('div'); d.className='topic '+(is?'done':'unfinished');
+   d.innerHTML=`<input type="checkbox" ${is?'checked':''}><div><span>${t[0]}</span><small>${t[1]}</small></div>`;
+   d.querySelector('input').onchange=e=>{saved[sub.s+'|'+t[0]]=e.target.checked;localStorage.setItem('guildV4',JSON.stringify(saved));render(filter);};
+   wrap.appendChild(d);
+  }); g.appendChild(wrap);
+ });
+ document.getElementById('u').innerText=uf; document.getElementById('d').innerText=dn; document.getElementById('p').innerText=tot?Math.round((dn/tot)*100)+'%':'0%';
+}
+function fs(s,btn){document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');render(s);}
+render();
+if('serviceWorker' in navigator){navigator.serviceWorker.register('data:text/javascript;base64,'+btoa('self.addEventListener("fetch",e=>{e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)))})'))}
+</script></body></html>
